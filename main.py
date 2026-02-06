@@ -29,7 +29,12 @@ if __name__ == "__main__":
     # Inference setting 
     parser.add_argument("--seed", type=int, default=None, 
                     help='Random seed for reproducible negative sampling')
-
+    
+    # SmolVLM settings
+    parser.add_argument("--use_smolvlm", action='store_true',
+                    help='Use SmolVLM instead of OPT for Stage-2 (enables multimodal)')
+    parser.add_argument("--num_history_images", type=int, default=3,
+                    help='Number of history items to include images for (default: 3)')
     
     # hyperparameters options
     parser.add_argument('--batch_size1', default=32, type=int)
