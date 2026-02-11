@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from transformers import AutoTokenizer, OPTForCausalLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, OPTForCausalLM,AutoProcessor, BitsAndBytesConfig,AutoModelForImageTextToText
 
 class llm4rec(nn.Module):
     def __init__(
@@ -20,18 +20,19 @@ class llm4rec(nn.Module):
             # bnb_4bit_quant_type="nf4"
 )
         
-        if llm_model == 'opt':
-            self.llm_model = OPTForCausalLM.from_pretrained(
-                "facebook/opt-6.7b", 
-                quantization_config=bnb_config, 
-                torch_dtype=torch.float16, 
-                # load_in_4bit=True,
-                use_safetensors=True,
-                  device_map=self.device)
-            self.llm_tokenizer = AutoTokenizer.from_pretrained("facebook/opt-6.7b", use_fast=False)
-            # self.llm_model = OPTForCausalLM.from_pretrained("facebook/opt-6.7b", torch_dtype=torch.float16, device_map=self.device)
+        if llm_model == "smol":
+            self.llm_model = AutoModelForImageTextToText.from_pretrained(
+                "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+                quantization_config=bnb_config,
+                device_map="auto",
+                torch_dtype=torch.bfloat16,
+                _attn_implementation="flash_attention_2"
+            )
+            processor = AutoProcessor.from_pretrained("HuggingFaceTB/SmolVLM2-500M-Video-Instruct")
+            self.llm_tokenizer = processor.tokenizer
         else:
-            raise Exception(f'{llm_model} is not supported')
+            raise Exception(f"{llm_model} is not supported")
+
             
         self.llm_tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.llm_tokenizer.add_special_tokens({'bos_token': '</s>'})
